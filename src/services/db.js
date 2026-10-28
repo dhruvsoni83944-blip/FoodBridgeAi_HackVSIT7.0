@@ -1,96 +1,150 @@
-import { 
-  collection, 
-  doc, 
-  setDoc, 
-  getDoc, 
-  updateDoc,
-  serverTimestamp 
-} from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { db, storage } from "../firebase/config";
+/**
+ * FoodBridge AI - Local Storage Database Service (Firebase Disconnected)
+ * Provides local persistent storage operations using browser LocalStorage.
+ */
+
+// Local Storage Keys
+const STORAGE_KEYS = {
+  USERS: 'fb_users',
+  DONATIONS: 'fb_donations',
+  VOLUNTEERS: 'fb_volunteers',
+  NGOS: 'fb_ngos'
+};
+
+const getLocalItem = (key, fallback = []) => {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch (err) {
+    console.warn(`Error reading localStorage key ${key}:`, err);
+    return fallback;
+  }
+};
+
+const setLocalItem = (key, value) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (err) {
+    console.warn(`Error writing localStorage key ${key}:`, err);
+  }
+};
 
 // Users
 export const createUserProfile = async (uid, userData) => {
   try {
-    const userRef = doc(db, "users", uid);
-    await setDoc(userRef, {
+    const users = getLocalItem(STORAGE_KEYS.USERS, []);
+    const existingIdx = users.findIndex(u => u.uid === uid || u.id === uid);
+    const userProfile = {
+      id: uid,
+      uid,
       ...userData,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
-    });
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    if (existingIdx >= 0) {
+      users[existingIdx] = { ...users[existingIdx], ...userProfile };
+    } else {
+      users.push(userProfile);
+    }
+    setLocalItem(STORAGE_KEYS.USERS, users);
     return true;
   } catch (error) {
-    console.error("Error creating user profile:", error);
+    console.error("Error creating local user profile:", error);
     return false;
   }
 };
 
-export const getUserProfile = async (uid) => {
+export const getUserProfile = async (identifier) => {
   try {
-    const userRef = doc(db, "users", uid);
-    const docSnap = await getDoc(userRef);
-    if (docSnap.exists()) {
-      return { id: docSnap.id, ...docSnap.data() };
-    }
-    return null;
+    if (!identifier) return null;
+    const users = getLocalItem(STORAGE_KEYS.USERS, []);
+    const clean = String(identifier).trim().toLowerCase();
+    const found = users.find(u => 
+      (u.uid && String(u.uid).toLowerCase() === clean) || 
+      (u.id && String(u.id).toLowerCase() === clean) || 
+      (u.email && String(u.email).toLowerCase() === clean) ||
+      (u.name && String(u.name).toLowerCase() === clean)
+    );
+    return found || null;
   } catch (error) {
-    console.error("Error getting user profile:", error);
+    console.error("Error getting local user profile:", error);
     return null;
+  }
+};
+
+export const getAllUsers = async () => {
+  try {
+    return getLocalItem(STORAGE_KEYS.USERS, []);
+  } catch (error) {
+    console.error("Error getting all local users:", error);
+    return [];
   }
 };
 
 export const updateUserProfile = async (uid, updates) => {
   try {
-    const userRef = doc(db, "users", uid);
-    await updateDoc(userRef, {
-      ...updates,
-      updatedAt: serverTimestamp()
-    });
-    return true;
+    const users = getLocalItem(STORAGE_KEYS.USERS, []);
+    const idx = users.findIndex(u => u.uid === uid || u.id === uid);
+    if (idx >= 0) {
+      users[idx] = { ...users[idx], ...updates, updatedAt: new Date().toISOString() };
+      setLocalItem(STORAGE_KEYS.USERS, users);
+      return true;
+    }
+    return false;
   } catch (error) {
-    console.error("Error updating user profile:", error);
+    console.error("Error updating local user profile:", error);
     return false;
   }
 };
 
-// Storage
+// Storage (Local Object URL generator)
 export const uploadFile = async (path, file) => {
   try {
-    const storageRef = ref(storage, path);
-    const snapshot = await uploadBytes(storageRef, file);
-    const downloadURL = await getDownloadURL(snapshot.ref);
-    return downloadURL;
+    if (file instanceof File || file instanceof Blob) {
+      return URL.createObjectURL(file);
+    }
+    return "/ai_food_match.jpg";
   } catch (error) {
-    console.error("Error uploading file:", error);
-    throw error;
+    console.error("Error in local file upload:", error);
+    return "/ai_food_match.jpg";
   }
 };
 
 // Donations
 export const createDonation = async (donationId, donationData) => {
   try {
-    const donationRef = doc(db, "donations", donationId);
-    await setDoc(donationRef, {
+    const donations = getLocalItem(STORAGE_KEYS.DONATIONS, []);
+    const newDonation = {
+      id: donationId,
       ...donationData,
-      createdAt: serverTimestamp()
-    });
+      createdAt: donationData.createdAt || new Date().toISOString()
+    };
+    const updated = [newDonation, ...donations.filter(d => d.id !== donationId)];
+    setLocalItem(STORAGE_KEYS.DONATIONS, updated);
     return true;
   } catch (error) {
-    console.error("Error creating donation:", error);
+    console.error("Error creating local donation:", error);
     return false;
   }
 };
 
 export const updateDonationStatus = async (donationId, updates) => {
   try {
-    const donationRef = doc(db, "donations", donationId);
-    await updateDoc(donationRef, {
-      ...updates,
-      updatedAt: serverTimestamp()
-    });
-    return true;
+    const donations = getLocalItem(STORAGE_KEYS.DONATIONS, []);
+    const idx = donations.findIndex(d => d.id === donationId);
+    if (idx >= 0) {
+      donations[idx] = {
+        ...donations[idx],
+        ...updates,
+        updatedAt: new Date().toISOString()
+      };
+      setLocalItem(STORAGE_KEYS.DONATIONS, donations);
+      return true;
+    }
+    return false;
   } catch (error) {
-    console.error("Error updating donation:", error);
+    console.error("Error updating local donation:", error);
     return false;
   }
 };
@@ -98,12 +152,17 @@ export const updateDonationStatus = async (donationId, updates) => {
 // Volunteer Location tracking
 export const updateVolunteerLocation = async (donationId, coords) => {
   try {
-    const donationRef = doc(db, "donations", donationId);
-    await updateDoc(donationRef, {
-      volunteerCoords: coords,
-      updatedAt: serverTimestamp()
-    });
+    const donations = getLocalItem(STORAGE_KEYS.DONATIONS, []);
+    const idx = donations.findIndex(d => d.id === donationId);
+    if (idx >= 0) {
+      donations[idx] = {
+        ...donations[idx],
+        volunteerCoords: coords,
+        updatedAt: new Date().toISOString()
+      };
+      setLocalItem(STORAGE_KEYS.DONATIONS, donations);
+    }
   } catch (error) {
-    console.error("Error updating volunteer location:", error);
+    console.error("Error updating local volunteer location:", error);
   }
 };

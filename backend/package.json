@@ -1,0 +1,52 @@
+{
+  "name": "foodbridge-ai-backend",
+  "version": "1.0.0",
+  "description": "Enterprise-grade backend API for FoodBridge AI connecting donors, NGOs, and volunteers with AI freshness analysis.",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "start:prod": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "postinstall": "prisma generate",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy",
+    "prisma:push": "prisma db push",
+    "prisma:seed": "node prisma/seed.js",
+    "db:start": "node embedded-pg.js",
+    "db:studio": "prisma studio",
+    "test:flow": "node test-flow.js"
+  },
+  "keywords": [
+    "food-rescue",
+    "express",
+    "prisma",
+    "postgresql",
+    "jwt",
+    "ai",
+    "sustainability"
+  ],
+  "author": "FoodBridge AI Team",
+  "license": "ISC",
+  "dependencies": {
+    "@google/genai": "^2.31.0",
+    "@prisma/client": "^5.22.0",
+    "axios": "^1.7.9",
+    "bcryptjs": "^3.0.3",
+    "cloudinary": "^1.41.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "embedded-postgres": "^18.4.0-beta.17",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "express-validator": "^7.2.1",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9",
+    "prisma": "^5.22.0"
+  }
+}

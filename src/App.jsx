@@ -16,6 +16,7 @@ import { AdminDashboard } from './components/AdminDashboard';
 import { AIAssistantModal } from './components/AIAssistantModal';
 import { AuthModal } from './components/AuthModal';
 import { MobileSMSModal } from './components/MobileSMSModal';
+import { LearnMorePage } from './components/LearnMorePage';
 import { Footer } from './components/Footer';
 
 const MainContent = () => {
@@ -23,7 +24,7 @@ const MainContent = () => {
   const [authModalOpen, setAuthModalOpen] = useState(false);
 
   useEffect(() => {
-    if (!isLoggedIn && activeView !== 'landing') {
+    if (!isLoggedIn && activeView !== 'landing' && activeView !== 'learn-more') {
       setAuthModalOpen(true);
     }
   }, [isLoggedIn, activeView]);
@@ -35,8 +36,7 @@ const MainContent = () => {
   }, [isLoggedIn]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#04100c] text-slate-100 selection:bg-emerald-500 selection:text-white font-sans">
-      
+    <div className="min-h-screen flex flex-col bg-[#F2F2F2] text-slate-900 selection:bg-[#1D52F2] selection:text-white font-sans antialiased">
       {/* Navigation Header */}
       <Navbar 
         onOpenAuth={() => setAuthModalOpen(true)}
@@ -45,6 +45,7 @@ const MainContent = () => {
       {/* Main View Router Container */}
       <main className="flex-1">
         {activeView === 'landing' && <LandingPage onOpenAuth={() => setAuthModalOpen(true)} />}
+        {activeView === 'learn-more' && <LearnMorePage />}
         {activeView === 'donor' && <DonorDashboard />}
         {activeView === 'ai-analyzer' && (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -75,7 +76,7 @@ const MainContent = () => {
         isOpen={authModalOpen} 
         onClose={() => {
           setAuthModalOpen(false);
-          if (!isLoggedIn) {
+          if (!isLoggedIn && activeView !== 'learn-more') {
             setActiveView('landing');
           }
         }} 

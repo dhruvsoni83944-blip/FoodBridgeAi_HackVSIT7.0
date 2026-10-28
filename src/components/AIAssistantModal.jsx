@@ -1,14 +1,9 @@
 import React, { useState } from 'react';
-import { useApp } from '../context/AppContext';
 import { chatbotPresets } from '../data/mockData';
 import { 
   Bot, 
-  X, 
   Send, 
   Sparkles, 
-  Camera, 
-  CheckCircle2, 
-  HelpCircle,
   Minimize2
 } from 'lucide-react';
 
@@ -20,7 +15,7 @@ export const AIAssistantModal = () => {
     {
       id: 1,
       sender: 'ai',
-      text: "Hello! I am FoodBridge AI Assistant 🌿. How can I assist you with surplus food donation, freshness verification, or volunteer dispatch today?"
+      text: "Hello! I am FoodBridge AI Assistant. How can I assist you with surplus food donation, freshness verification, or volunteer dispatch today?"
     }
   ]);
 
@@ -63,61 +58,61 @@ export const AIAssistantModal = () => {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 p-4 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-emerald-950 font-bold shadow-2xl shadow-emerald-500/40 transition-all hover:scale-110 active:scale-95 flex items-center gap-3 border border-emerald-300/40"
+          className="fixed bottom-6 right-6 z-50 p-4 rounded-full bg-[#1D52F2] hover:bg-[#133BB5] text-white font-bold shadow-2xl shadow-[#1D52F2]/35 transition-all hover:scale-110 active:scale-95 flex items-center gap-2.5 border-2 border-white cursor-pointer"
           title="FoodBridge AI Assistant"
         >
           <div className="relative">
-            <Bot className="w-7 h-7" />
-            <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-emerald-300 animate-ping"></div>
+            <Bot className="w-6 h-6" />
+            <div className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#63A644] animate-ping"></div>
           </div>
-          <span className="hidden sm:inline font-extrabold text-sm pr-1">AI Assistant</span>
+          <span className="hidden sm:inline font-black text-sm pr-1">AI Assistant</span>
         </button>
       )}
 
       {/* Floating Chat Modal */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-96 max-w-[calc(100vw-2rem)] h-[520px] glass-panel rounded-3xl border border-emerald-500/40 shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 fade-in duration-300">
+        <div className="fixed bottom-6 right-6 z-50 w-96 max-w-[calc(100vw-2rem)] h-[520px] bg-white rounded-3xl border border-slate-200 shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 fade-in duration-300">
           
           {/* Chat Header */}
-          <div className="p-4 bg-emerald-950/90 border-b border-emerald-500/20 flex items-center justify-between">
+          <div className="p-4 bg-[#F8FAFC] border-b border-slate-200 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400">
+              <div className="p-2 rounded-xl bg-[#EBF1FE] text-[#1D52F2]">
                 <Bot className="w-5 h-5" />
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <h3 className="text-sm font-bold text-white">FoodBridge AI</h3>
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <h3 className="text-sm font-extrabold text-slate-900">FoodBridge AI</h3>
+                  <span className="w-2 h-2 rounded-full bg-[#63A644] animate-pulse"></span>
                 </div>
-                <p className="text-[10px] text-slate-400">Online • Food Safety & Dispatch Bot</p>
+                <p className="text-[10px] text-slate-500">Online • Food Safety & Dispatch Bot</p>
               </div>
             </div>
 
             <button 
               onClick={() => setIsOpen(false)}
-              className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-emerald-900/40"
+              className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/50 cursor-pointer"
             >
               <Minimize2 className="w-4 h-4" />
             </button>
           </div>
 
           {/* Messages Scroll Area */}
-          <div className="flex-1 p-4 overflow-y-auto space-y-3">
+          <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-[#F8FAFC]">
             {messages.map((m) => (
               <div 
                 key={m.id} 
                 className={`flex gap-2.5 ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 {m.sender === 'ai' && (
-                  <div className="w-7 h-7 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                  <div className="w-7 h-7 rounded-xl bg-[#EBF1FE] text-[#1D52F2] flex items-center justify-center shrink-0">
                     <Sparkles className="w-4 h-4" />
                   </div>
                 )}
                 
-                <div className={`p-3 rounded-2xl text-xs max-w-[80%] leading-relaxed ${
+                <div className={`p-3 rounded-2xl text-xs max-w-[82%] leading-relaxed ${
                   m.sender === 'user'
-                    ? 'bg-emerald-500 text-emerald-950 font-semibold shadow-md'
-                    : 'bg-emerald-950/90 border border-emerald-500/30 text-slate-200 shadow-sm'
+                    ? 'bg-[#1D52F2] text-white font-medium shadow-xs'
+                    : 'bg-white border border-slate-200 text-slate-800 shadow-xs'
                 }`}>
                   {m.text}
                 </div>
@@ -125,20 +120,20 @@ export const AIAssistantModal = () => {
             ))}
 
             {isTyping && (
-              <div className="flex items-center gap-2 text-xs text-slate-400 italic pl-2">
-                <Sparkles className="w-3.5 h-3.5 text-emerald-400 animate-spin" />
+              <div className="flex items-center gap-2 text-xs text-slate-500 italic pl-2">
+                <Sparkles className="w-3.5 h-3.5 text-[#1D52F2] animate-spin" />
                 <span>FoodBridge AI is generating answer...</span>
               </div>
             )}
           </div>
 
           {/* Preset Quick Chips */}
-          <div className="px-3 py-2 border-t border-emerald-500/10 bg-emerald-950/40 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+          <div className="px-3 py-2 border-t border-slate-200 bg-white flex items-center gap-1.5 overflow-x-auto no-scrollbar">
             {chatbotPresets.map((preset, idx) => (
               <button
                 key={idx}
                 onClick={() => handleSendMessage(preset)}
-                className="px-2.5 py-1 rounded-full bg-emerald-900/40 hover:bg-emerald-800/60 border border-emerald-500/20 text-[10px] font-semibold text-emerald-300 whitespace-nowrap"
+                className="px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-200 text-[10px] font-semibold text-slate-700 whitespace-nowrap cursor-pointer transition-colors"
               >
                 {preset}
               </button>
@@ -146,18 +141,18 @@ export const AIAssistantModal = () => {
           </div>
 
           {/* Input Bar */}
-          <div className="p-3 bg-emerald-950 border-t border-emerald-500/20 flex items-center gap-2">
+          <div className="p-3 bg-white border-t border-slate-200 flex items-center gap-2">
             <input 
               type="text" 
               placeholder="Ask about food safety, tax receipts, or status..."
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-              className="flex-1 px-3.5 py-2.5 rounded-xl bg-emerald-900/30 border border-emerald-500/30 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-emerald-400"
+              className="flex-1 px-3.5 py-2.5 rounded-xl bg-[#F8FAFC] border border-slate-200 text-slate-900 placeholder-slate-400 text-xs focus:outline-none focus:border-[#1D52F2] focus:bg-white"
             />
             <button
               onClick={() => handleSendMessage()}
-              className="p-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold shadow-md transition-transform hover:scale-105"
+              className="p-2.5 rounded-xl bg-[#1D52F2] hover:bg-[#133BB5] text-white font-bold shadow-xs transition-transform hover:scale-105 cursor-pointer"
             >
               <Send className="w-4 h-4" />
             </button>

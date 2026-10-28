@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { QRModal } from './QRModal';
 import { SendVolunteerSMSModal } from './SendVolunteerSMSModal';
@@ -15,12 +15,11 @@ import {
   Eye,
   ArrowRight,
   QrCode,
-  Zap,
   Smartphone,
   Truck,
-  Send,
   Building2,
-  UserCircle
+  UserCircle,
+  Check 
 } from 'lucide-react';
 
 export const DonorDashboard = () => {
@@ -33,129 +32,69 @@ export const DonorDashboard = () => {
     showToast,
     registeredVolunteers,
     registeredNGOs,
-    currentRole
+    currentRole,
+    acceptNgoDonation,
+    declineNgoDonation,
+    acceptVolunteerDonation,
+    declineVolunteerDonation
   } = useApp();
 
   const [activeQRDonation, setActiveQRDonation] = useState(null);
   const [activeSMSDonation, setActiveSMSDonation] = useState(null);
 
-  const [selectedNgo, setSelectedNgo] = useState(null);
-  const [selectedVolunteer, setSelectedVolunteer] = useState(null);
+  // Multi-selection states for NGOs and Volunteers
+  const [selectedNgos, setSelectedNgos] = useState(() => (registeredNGOs && registeredNGOs.length > 0) ? registeredNGOs : []);
+  const [selectedVolunteers, setSelectedVolunteers] = useState(() => (registeredVolunteers && registeredVolunteers.length > 0) ? registeredVolunteers : []);
 
-  if (currentRole !== 'donor') {
-    return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
-        {/* Read-Only Food Surplus Directory Banner */}
-        <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-emerald-500/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
-          <div className="space-y-2 z-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold border border-emerald-500/30">
-              <Utensils className="w-3.5 h-3.5" />
-              <span>Surplus Food Directory</span>
-            </div>
-            <h1 className="text-2xl sm:text-4xl font-extrabold text-white">Active Food Donations</h1>
-            <p className="text-slate-300 text-xs sm:text-sm">
-              Explore the surplus food listed by verified donors in the network.
-            </p>
-          </div>
-        </div>
+  useEffect(() => {
+    if (selectedNgos.length === 0 && registeredNGOs?.length > 0) {
+      setSelectedNgos(registeredNGOs);
+    }
+  }, [registeredNGOs]);
 
-        {/* Directory List */}
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <Package className="w-5 h-5 text-emerald-400" />
-              <span>Surplus Food Packages</span>
-            </h2>
-            <span className="text-xs text-slate-400 font-semibold bg-emerald-500/10 px-2 py-1 rounded-md border border-emerald-500/20">
-              {donations.length} Active Listings
-            </span>
-          </div>
+  useEffect(() => {
+    if (selectedVolunteers.length === 0 && registeredVolunteers?.length > 0) {
+      setSelectedVolunteers(registeredVolunteers);
+    }
+  }, [registeredVolunteers]);
 
-          {donations && donations.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {donations.map((item) => (
-                <div key={item.id} className="glass-card p-6 rounded-3xl border border-emerald-500/30 space-y-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <img 
-                        src={item.imageUrl} 
-                        alt={item.foodName}
-                        className="w-16 h-16 object-cover rounded-2xl border border-emerald-500/40"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=150&auto=format&fit=crop&q=80";
-                        }}
-                      />
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                            {item.id}
-                          </span>
-                          <span className="text-[10px] font-bold text-blue-300 bg-blue-500/10 px-2 py-0.5 rounded">
-                            {item.category}
-                          </span>
-                        </div>
-                        <h3 className="text-base font-extrabold text-white mt-1.5">{item.foodName}</h3>
-                        <p className="text-xs text-slate-300">{item.quantity} • Feeds ~{item.peopleFedCount} people</p>
-                      </div>
-                    </div>
+  const toggleNgoSelection = (ngo) => {
+    setSelectedNgos(prev => {
+      const exists = prev.some(n => n.id === ngo.id || n.name === ngo.name);
+      if (exists) {
+        return prev.filter(n => n.id !== ngo.id && n.name !== ngo.name);
+      } else {
+        return [...prev, ngo];
+      }
+    });
+  };
 
-                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide border ${
-                      item.status === 'Distributed' || item.status === 'Delivered to NGO'
-                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' 
-                        : item.status === 'Volunteer Accepted' || item.status === 'Food Picked Up' || item.status === 'Volunteer Travelling'
-                        ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                        : 'bg-blue-500/20 text-blue-300 border-blue-500/40'
-                    }`}>
-                      {item.status}
-                    </span>
-                  </div>
+  const toggleSelectAllNgos = () => {
+    if (selectedNgos.length === registeredNGOs.length) {
+      setSelectedNgos([]);
+    } else {
+      setSelectedNgos([...registeredNGOs]);
+    }
+  };
 
-                  <div className="text-xs text-slate-300 bg-emerald-950/60 p-4 rounded-2xl border border-emerald-500/20 space-y-2">
-                    <p className="flex items-start gap-1">
-                      <strong className="text-slate-400 font-semibold shrink-0">Pickup:</strong>
-                      <span className="truncate">{item.pickupAddress}</span>
-                    </p>
-                    {item.recommendedNgo && (
-                      <p className="flex items-start gap-1">
-                        <strong className="text-slate-400 font-semibold shrink-0">NGO Recipient:</strong>
-                        <span className="truncate text-blue-300 font-medium">{item.recommendedNgo.name}</span>
-                      </p>
-                    )}
-                    {item.assignedVolunteer && (
-                      <p className="flex items-start gap-1">
-                        <strong className="text-slate-400 font-semibold shrink-0">Volunteer:</strong>
-                        <span className="truncate text-amber-300 font-medium">{item.assignedVolunteer.name} ({item.assignedVolunteer.vehicle})</span>
-                      </p>
-                    )}
-                  </div>
+  const toggleVolunteerSelection = (vol) => {
+    setSelectedVolunteers(prev => {
+      const exists = prev.some(v => v.id === vol.id || v.name === vol.name);
+      if (exists) {
+        return prev.filter(v => v.id !== vol.id && v.name !== vol.name);
+      } else {
+        return [...prev, vol];
+      }
+    });
+  };
 
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => {
-                        setSelectedDonation(item);
-                        setActiveView('live-tracking');
-                      }}
-                      className="w-full py-2.5 rounded-xl bg-emerald-900/40 hover:bg-emerald-800/60 border border-emerald-500/30 text-emerald-300 text-xs font-bold transition-all flex items-center justify-center gap-1.5"
-                    >
-                      <Eye className="w-3.5 h-3.5" />
-                      <span>Live GPS Map</span>
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12 glass-panel rounded-3xl border border-emerald-500/20 max-w-md mx-auto">
-              <AlertCircle className="w-12 h-12 text-emerald-400/50 mx-auto mb-4" />
-              <h3 className="text-lg font-bold text-white">No Food Donations Listed Yet</h3>
-              <p className="text-xs text-slate-400 mt-1 max-w-[280px] mx-auto">Verified donors can submit excess food listings using the Donor dashboard.</p>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
+  const toggleSelectAllVolunteers = () => {
+    if (selectedVolunteers.length === registeredVolunteers.length) {
+      setSelectedVolunteers([]);
+    } else {
+      setSelectedVolunteers([...registeredVolunteers]);
+    }
+  };
 
   const [formData, setFormData] = useState({
     foodName: '',
@@ -168,6 +107,159 @@ export const DonorDashboard = () => {
     imageUrl: '/ai_food_match.jpg',
   });
 
+  // Filter donations from registered donors
+  const donorDonations = (donations || []).filter(item => {
+    if (!item) return false;
+    if (item.donorName?.toLowerCase() === 'rohit') return false;
+    if (item.foodName?.toLowerCase() === 'rohit' && item.id === 'DON-3438') return false;
+    return true;
+  });
+
+  if (currentRole !== 'donor') {
+    return (
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 space-y-8 text-center">
+        <div className="w-16 h-16 rounded-3xl bg-[#EBF1FE] text-[#1D52F2] flex items-center justify-center mx-auto shadow-sm border border-[#1D52F2]/20">
+          <HeartHandshake className="w-8 h-8" />
+        </div>
+        <div className="space-y-3">
+          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EBF1FE] text-[#1D52F2] text-xs font-bold border border-[#1D52F2]/30">
+            <HeartHandshake className="w-3.5 h-3.5" />
+            <span>Donor Hub Access Control</span>
+          </span>
+          <h1 className="text-2xl sm:text-4xl font-black text-slate-900">Registered Food Donors Portal</h1>
+          <p className="text-slate-600 text-sm max-w-lg mx-auto">
+            You are currently signed in as a <strong className="text-[#F26B1D] font-bold">{currentRole === 'volunteer' ? 'Volunteer Courier' : currentRole?.toUpperCase()} ({currentUser?.name || 'User'})</strong>. Donor Hub is dedicated exclusively to registered food donors to upload surplus meals.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+          {currentRole === 'volunteer' && (
+            <button
+              onClick={() => setActiveView('volunteer')}
+              className="px-6 py-3.5 rounded-2xl bg-[#1D52F2] hover:bg-[#133BB5] text-white font-extrabold text-xs shadow-md shadow-[#1D52F2]/25 transition-all flex items-center gap-2 cursor-pointer"
+            >
+              <Truck className="w-4 h-4" />
+              <span>Go to My Deliveries</span>
+            </button>
+          )}
+          {currentRole === 'ngo' && (
+            <button
+              onClick={() => setActiveView('ngo')}
+              className="px-6 py-3.5 rounded-2xl bg-[#1D52F2] hover:bg-[#133BB5] text-white font-extrabold text-xs shadow-md shadow-[#1D52F2]/25 transition-all flex items-center gap-2 cursor-pointer"
+            >
+              <Building2 className="w-4 h-4" />
+              <span>Go to NGO Shelters</span>
+            </button>
+          )}
+          <button
+            onClick={() => setActiveView('landing')}
+            className="px-6 py-3.5 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-extrabold text-xs transition-all flex items-center gap-2 cursor-pointer"
+          >
+            <span>Back to Home</span>
+          </button>
+        </div>
+
+        {/* If NGO or Volunteer has pending donations, show them directly here! */}
+        {donorDonations.length > 0 && (
+          <div className="pt-8 text-left max-w-2xl mx-auto space-y-4">
+            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+              <Clock className="w-4 h-4 text-[#1D52F2]" />
+              <span>Incoming Donations Contacting You ({currentUser?.name}):</span>
+            </h3>
+            <div className="space-y-3">
+              {donorDonations.map((item) => {
+                const isNgo = currentRole === 'ngo';
+                const isVol = currentRole === 'volunteer';
+
+                const isNgoAccepted = item.acceptedNgo?.name?.toLowerCase() === currentUser?.name?.toLowerCase();
+                const isNgoDeclined = item.declinedNgos?.some(n => (typeof n === 'string' ? n : n?.name)?.toLowerCase() === currentUser?.name?.toLowerCase());
+
+                const isVolAccepted = item.acceptedVolunteer?.name?.toLowerCase() === currentUser?.name?.toLowerCase() || (item.assignedVolunteer?.name?.toLowerCase() === currentUser?.name?.toLowerCase() && item.assignedVolunteer?.isAccepted);
+                const isVolDeclined = item.declinedVolunteers?.some(v => (typeof v === 'string' ? v : v?.name)?.toLowerCase() === currentUser?.name?.toLowerCase());
+
+                return (
+                  <div key={item.id} className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold text-[#1D52F2] bg-[#EBF1FE] px-2 py-0.5 rounded border border-[#1D52F2]/20">{item.id}</span>
+                        <span className="text-xs font-bold text-slate-900">{item.foodName}</span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-1">
+                        From: <strong className="text-slate-800">{item.donorName || "Registered Donor"}</strong> • {item.quantity} (~{item.peopleFedCount} people)
+                      </p>
+                      <p className="text-[11px] text-slate-500">Status: <strong className="text-[#1D52F2]">{item.status}</strong></p>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      {isNgo && (
+                        <>
+                          {isNgoAccepted ? (
+                            <span className="px-3 py-1.5 rounded-xl bg-[#F0F8EC] text-[#63A644] font-bold text-xs border border-[#63A644]/30 flex items-center gap-1">
+                              <CheckCircle2 className="w-3.5 h-3.5" /> Accepted
+                            </span>
+                          ) : isNgoDeclined ? (
+                            <span className="px-3 py-1.5 rounded-xl bg-red-50 text-red-600 font-bold text-xs border border-red-200 flex items-center gap-1">
+                              <XCircle className="w-3.5 h-3.5" /> Declined
+                            </span>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => acceptNgoDonation(item.id, currentUser)}
+                                className="px-3 py-2 rounded-xl bg-[#63A644] hover:bg-[#4B8233] text-white font-bold text-xs shadow-xs transition-all cursor-pointer flex items-center gap-1"
+                              >
+                                <CheckCircle2 className="w-3.5 h-3.5" /> Accept
+                              </button>
+                              <button
+                                onClick={() => declineNgoDonation(item.id, currentUser, "Capacity full")}
+                                className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-red-50 text-red-600 font-bold text-xs border border-slate-200 hover:border-red-200 transition-all cursor-pointer flex items-center gap-1"
+                              >
+                                <XCircle className="w-3.5 h-3.5" /> Decline
+                              </button>
+                            </>
+                          )}
+                        </>
+                      )}
+
+                      {isVol && (
+                        <>
+                          {isVolAccepted ? (
+                            <span className="px-3 py-1.5 rounded-xl bg-[#F0F8EC] text-[#63A644] font-bold text-xs border border-[#63A644]/30 flex items-center gap-1">
+                              <CheckCircle2 className="w-3.5 h-3.5" /> Accepted
+                            </span>
+                          ) : isVolDeclined ? (
+                            <span className="px-3 py-1.5 rounded-xl bg-red-50 text-red-600 font-bold text-xs border border-red-200 flex items-center gap-1">
+                              <XCircle className="w-3.5 h-3.5" /> Declined
+                            </span>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => acceptVolunteerDonation(item.id, currentUser)}
+                                className="px-3 py-2 rounded-xl bg-[#63A644] hover:bg-[#4B8233] text-white font-bold text-xs shadow-xs transition-all cursor-pointer flex items-center gap-1"
+                              >
+                                <CheckCircle2 className="w-3.5 h-3.5" /> Accept
+                              </button>
+                              <button
+                                onClick={() => declineVolunteerDonation(item.id, currentUser, "Cannot travel right now")}
+                                className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-red-50 text-red-600 font-bold text-xs border border-slate-200 hover:border-red-200 transition-all cursor-pointer flex items-center gap-1"
+                              >
+                                <XCircle className="w-3.5 h-3.5" /> Decline
+                              </button>
+                            </>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+
   const categories = [
     'Cooked Meals',
     'Bakery & Pastries',
@@ -178,10 +270,13 @@ export const DonorDashboard = () => {
   ];
 
   const handleAutofillLocation = () => {
-    setFormData((prev) => ({
-      ...prev,
-      pickupAddress: "Grand Hyatt Banquet Hall, 88 Grand Boulevard"
-    }));
+    if (currentUser?.address) {
+      setFormData((prev) => ({ ...prev, pickupAddress: currentUser.address }));
+      showToast("Autofilled pickup address from your profile!", "info");
+    } else {
+      setFormData((prev) => ({ ...prev, pickupAddress: "Sector 4, City Center (Current Location)" }));
+      showToast("Autofilled current location!", "info");
+    }
   };
 
   const handleSubmit = (e) => {
@@ -196,55 +291,57 @@ export const DonorDashboard = () => {
       return;
     }
 
-    if (!selectedNgo || !selectedVolunteer) {
-      showToast("Please select both an NGO Recipient and a Volunteer Courier before donating.", "warning");
+    if (selectedNgos.length === 0 || selectedVolunteers.length === 0) {
+      showToast("Please select at least one NGO recipient and one Volunteer courier before donating.", "warning");
       return;
     }
     const payload = {
       ...formData,
-      selectedNgo,
-      selectedVolunteer
+      selectedNgos,
+      selectedVolunteers,
+      selectedNgo: selectedNgos[0],
+      selectedVolunteer: selectedVolunteers[0]
     };
-    const created = addDonation(payload);
-    showToast(`Donation Created! Awaiting acceptance from ${selectedNgo.name}.`, 'success');
+    addDonation(payload);
+    showToast(`Donation Created! Dispatched alert to ${selectedNgos.length} NGO(s) and ${selectedVolunteers.length} volunteer courier(s).`, 'success');
     setActiveView('live-tracking');
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
       
       {/* Header Banner */}
-      <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-emerald-500/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
+      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
         <div className="space-y-2 z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold border border-emerald-500/30">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EBF1FE] text-[#1D52F2] text-xs font-bold border border-[#1D52F2]/30">
             <HeartHandshake className="w-3.5 h-3.5" />
-            <span>Donor Portal • {currentUser?.name}</span>
+            <span>Donor Portal • {currentUser?.name || "Verified Donor"}</span>
           </div>
-          <h1 className="text-2xl sm:text-4xl font-extrabold text-white">Post Surplus Food for Rescue</h1>
-          <p className="text-slate-300 text-xs sm:text-sm">
+          <h1 className="text-2xl sm:text-4xl font-black text-slate-900">Post Surplus Food for Rescue</h1>
+          <p className="text-slate-600 text-xs sm:text-sm">
             AI instantly matches your food with nearby verified NGOs and assigns dispatch volunteers. Send SMS alerts directly to couriers.
           </p>
         </div>
 
         <div className="flex items-center gap-3 z-10">
-          <div className="px-4 py-3 rounded-2xl glass-card text-center">
-            <p className="text-xs text-slate-400 font-semibold">Verification</p>
+          <div className="px-5 py-3 rounded-2xl bg-[#F8FAFC] border border-slate-200 text-center">
+            <p className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Verification</p>
             {currentUser?.verificationStatus === 'Verified' ? (
-              <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-300">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> 
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#63A644] mt-0.5">
+                <CheckCircle2 className="w-4 h-4 text-[#63A644]" /> 
                 {currentUser?.donorType === 'Household / Individual' ? 'Verified Household Donor' : 'FSSAI Verified Donor'}
               </span>
             ) : currentUser?.verificationStatus === 'Pending' ? (
-              <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-300">
-                <AlertCircle className="w-3.5 h-3.5 text-amber-400" /> Pending Verification
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#F26B1D] mt-0.5">
+                <AlertCircle className="w-4 h-4 text-[#F26B1D]" /> Pending Verification
               </span>
             ) : currentUser?.verificationStatus === 'Rejected' ? (
-              <span className="inline-flex items-center gap-1 text-xs font-bold text-red-300">
-                <AlertCircle className="w-3.5 h-3.5 text-red-400" /> Verification Rejected
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-red-600 mt-0.5">
+                <AlertCircle className="w-4 h-4 text-red-600" /> Verification Rejected
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-300">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> Verified Donor
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#63A644] mt-0.5">
+                <CheckCircle2 className="w-4 h-4 text-[#63A644]" /> Verified Donor
               </span>
             )}
           </div>
@@ -254,35 +351,35 @@ export const DonorDashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* LEFT FORM COLUMN (7 COLS) */}
-        <div className="lg:col-span-7 glass-panel p-6 sm:p-8 rounded-3xl border border-emerald-500/30 shadow-2xl space-y-6">
-          <div className="flex flex-col gap-3 border-b border-emerald-500/20 pb-4">
+        <div className="lg:col-span-7 bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+          <div className="flex flex-col gap-3 border-b border-slate-200 pb-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <Package className="w-5 h-5 text-emerald-400" />
+              <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                <Package className="w-5 h-5 text-[#1D52F2]" />
                 <span>Food Surplus Upload Form</span>
               </h2>
               <button 
                 type="button"
                 onClick={() => setActiveView('ai-analyzer')}
-                className="text-[11px] font-bold text-emerald-300 bg-emerald-500/20 hover:bg-emerald-500/30 px-3 py-1.5 rounded-full border border-emerald-500/40 flex items-center gap-1 transition-all"
+                className="text-xs font-bold text-[#1D52F2] bg-[#EBF1FE] hover:bg-[#1D52F2]/15 px-3 py-1.5 rounded-full border border-[#1D52F2]/30 flex items-center gap-1.5 transition-all cursor-pointer"
               >
-                <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Food Quality Check Tab</span>
+                <Sparkles className="w-3.5 h-3.5 text-[#1D52F2]" />
+                <span>Food Quality Check</span>
               </button>
             </div>
             
-            {(selectedNgo || selectedVolunteer) && (
-              <div className="flex flex-wrap gap-2 mt-2">
-                {selectedNgo && (
-                  <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1.5 bg-blue-500/20 text-blue-300 border border-blue-500/40 rounded-lg">
-                    <Building2 className="w-3 h-3" />
-                    Recipient: {selectedNgo.name}
+            {(selectedNgos.length > 0 || selectedVolunteers.length > 0) && (
+              <div className="flex flex-wrap gap-2 mt-1">
+                {selectedNgos.length > 0 && (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 bg-[#EBF1FE] text-[#1D52F2] border border-[#1D52F2]/30 rounded-xl">
+                    <Building2 className="w-3.5 h-3.5" />
+                    {selectedNgos.length} NGO Shelter(s) Selected
                   </span>
                 )}
-                {selectedVolunteer && (
-                  <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded-lg">
-                    <UserCircle className="w-3 h-3" />
-                    Courier: {selectedVolunteer.name}
+                {selectedVolunteers.length > 0 && (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 bg-[#FEF3EB] text-[#F26B1D] border border-[#F26B1D]/30 rounded-xl">
+                    <UserCircle className="w-3.5 h-3.5" />
+                    {selectedVolunteers.length} Standby Courier(s) Selected
                   </span>
                 )}
               </div>
@@ -294,25 +391,25 @@ export const DonorDashboard = () => {
             {/* Food Name & Category */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">Food Item Name *</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Food Item Name *</label>
                 <input 
                   type="text" 
                   required
-                  placeholder="e.g. Surplus Wedding Reception Buffet"
+                  placeholder="e.g. Prepared Catered Meals, Fresh Bakery Boxes"
                   value={formData.foodName}
                   onChange={(e) => setFormData({...formData, foodName: e.target.value})}
-                  className="w-full px-4 py-3 rounded-xl bg-emerald-950/80 border border-emerald-500/30 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-emerald-400"
+                  className="w-full px-4 py-3 rounded-xl bg-[#F8FAFC] border border-slate-200 text-slate-900 placeholder-slate-400 text-xs focus:outline-none focus:border-[#1D52F2] focus:bg-white transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">Food Category *</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Food Category *</label>
                 <select
                   value={formData.category}
                   onChange={(e) => setFormData({...formData, category: e.target.value})}
-                  className="w-full px-4 py-3 rounded-xl bg-emerald-950/90 border border-emerald-500/30 text-white text-xs focus:outline-none focus:border-emerald-400"
+                  className="w-full px-4 py-3 rounded-xl bg-[#F8FAFC] border border-slate-200 text-slate-900 text-xs focus:outline-none focus:border-[#1D52F2] focus:bg-white transition-all cursor-pointer"
                 >
-                  {categories.map(c => <option key={c} value={c} className="bg-emerald-950 text-white">{c}</option>)}
+                  {categories.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
             </div>
@@ -320,31 +417,31 @@ export const DonorDashboard = () => {
             {/* Quantity & Servings & Expiry */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">Quantity (kg / boxes) *</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Quantity (kg / boxes) *</label>
                 <input 
                   type="text" 
                   required
                   placeholder="e.g. 35 kg"
                   value={formData.quantity}
                   onChange={(e) => setFormData({...formData, quantity: e.target.value})}
-                  className="w-full px-4 py-3 rounded-xl bg-emerald-950/80 border border-emerald-500/30 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-emerald-400"
+                  className="w-full px-4 py-3 rounded-xl bg-[#F8FAFC] border border-slate-200 text-slate-900 placeholder-slate-400 text-xs focus:outline-none focus:border-[#1D52F2] focus:bg-white transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">People it can Feed *</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">People it can Feed *</label>
                 <input 
                   type="number" 
                   required
                   placeholder="e.g. 90"
                   value={formData.peopleFedCount}
                   onChange={(e) => setFormData({...formData, peopleFedCount: e.target.value})}
-                  className="w-full px-4 py-3 rounded-xl bg-emerald-950/80 border border-emerald-500/30 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-emerald-400"
+                  className="w-full px-4 py-3 rounded-xl bg-[#F8FAFC] border border-slate-200 text-slate-900 placeholder-slate-400 text-xs focus:outline-none focus:border-[#1D52F2] focus:bg-white transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">Freshness Window (Hours) *</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Freshness Window (Hours) *</label>
                 <input 
                   type="number" 
                   required
@@ -353,7 +450,7 @@ export const DonorDashboard = () => {
                   placeholder="e.g. 6"
                   value={formData.expiryHours}
                   onChange={(e) => setFormData({...formData, expiryHours: e.target.value})}
-                  className="w-full px-4 py-3 rounded-xl bg-emerald-950/80 border border-emerald-500/30 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-emerald-400"
+                  className="w-full px-4 py-3 rounded-xl bg-[#F8FAFC] border border-slate-200 text-slate-900 placeholder-slate-400 text-xs focus:outline-none focus:border-[#1D52F2] focus:bg-white transition-all"
                 />
               </div>
             </div>
@@ -361,13 +458,13 @@ export const DonorDashboard = () => {
             {/* Address & Geolocation autofill */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-semibold text-slate-300">Pickup Address *</label>
+                <label className="block text-xs font-bold text-slate-700">Pickup Address *</label>
                 <button
                   type="button"
                   onClick={handleAutofillLocation}
-                  className="text-[11px] font-bold text-emerald-400 hover:underline flex items-center gap-1"
+                  className="text-xs font-bold text-[#1D52F2] hover:underline flex items-center gap-1 cursor-pointer"
                 >
-                  <MapPin className="w-3 h-3" /> Auto-Detect GPS Location
+                  <MapPin className="w-3.5 h-3.5" /> Auto-Detect GPS Location
                 </button>
               </div>
               <input 
@@ -376,29 +473,29 @@ export const DonorDashboard = () => {
                 placeholder="Full address with landmark"
                 value={formData.pickupAddress}
                 onChange={(e) => setFormData({...formData, pickupAddress: e.target.value})}
-                className="w-full px-4 py-3 rounded-xl bg-emerald-950/80 border border-emerald-500/30 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-emerald-400"
+                className="w-full px-4 py-3 rounded-xl bg-[#F8FAFC] border border-slate-200 text-slate-900 placeholder-slate-400 text-xs focus:outline-none focus:border-[#1D52F2] focus:bg-white transition-all"
               />
             </div>
 
             {/* Contact Number */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">Contact Phone Number *</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Contact Phone Number *</label>
               <input 
                 type="tel" 
                 required
                 placeholder="+1 (555) 000-0000"
                 value={formData.contactNumber}
                 onChange={(e) => setFormData({...formData, contactNumber: e.target.value})}
-                className="w-full px-4 py-3 rounded-xl bg-emerald-950/80 border border-emerald-500/30 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-emerald-400"
+                className="w-full px-4 py-3 rounded-xl bg-[#F8FAFC] border border-slate-200 text-slate-900 placeholder-slate-400 text-xs focus:outline-none focus:border-[#1D52F2] focus:bg-white transition-all"
               />
             </div>
 
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-emerald-950 font-extrabold text-sm shadow-xl shadow-emerald-500/20 transition-all hover:scale-[1.01] flex items-center justify-center gap-2"
+              className="w-full py-4 rounded-2xl bg-[#1D52F2] hover:bg-[#133BB5] text-white font-black text-sm shadow-lg shadow-[#1D52F2]/25 transition-all hover:scale-[1.01] flex items-center justify-center gap-2 cursor-pointer"
             >
-              <HeartHandshake className="w-5 h-5 text-emerald-950" />
+              <HeartHandshake className="w-5 h-5 text-white" />
               <span>Donate Food & Trigger AI Smart Matching</span>
               <ArrowRight className="w-4 h-4" />
             </button>
@@ -409,181 +506,250 @@ export const DonorDashboard = () => {
         {/* RIGHT COLUMN (5 COLS) */}
         <div className="lg:col-span-5 space-y-6">
           
-          {/* a. Select NGO Recipient */}
-          <div className="glass-panel p-5 rounded-3xl border border-blue-500/30 space-y-4">
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]"></span> 
-              Select NGO Recipient
-            </h2>
+          {/* a. Select NGO Recipients (Multi-select) */}
+          <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#1D52F2]"></span> 
+                  Select NGO Recipients ({selectedNgos.length} Selected)
+                </h2>
+                <p className="text-[11px] text-slate-500 mt-0.5">Alert multiple shelters so an alternate can accept if one is full.</p>
+              </div>
+              <button 
+                type="button"
+                onClick={toggleSelectAllNgos}
+                className="text-[11px] font-bold text-[#1D52F2] hover:underline cursor-pointer"
+              >
+                {selectedNgos.length === registeredNGOs.length ? 'Deselect All' : 'Select All'}
+              </button>
+            </div>
+
             {registeredNGOs && registeredNGOs.length > 0 ? (
               <div className="space-y-3">
-                {registeredNGOs.map(ngo => (
-                  <div key={ngo.id} className={`glass-card p-4 rounded-xl border transition-all duration-300 ${selectedNgo?.id === ngo.id ? 'border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.2)] bg-emerald-900/10' : 'border-blue-500/20 hover:border-blue-500/40'}`}>
-                    <div className="flex justify-between items-start gap-4">
-                      <div>
-                        <h3 className="text-white font-bold text-sm">{ngo.name}</h3>
-                        <p className="text-slate-400 text-xs mt-1 flex items-start gap-1">
-                          <MapPin className="w-3 h-3 mt-0.5 text-blue-400 flex-shrink-0" />
-                          {ngo.address}
-                        </p>
-                        <div className="flex flex-wrap gap-2 mt-3">
-                          <span className="text-[10px] font-bold bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded border border-blue-500/30">Capacity: {ngo.capacity}</span>
-                          <span className="text-[10px] font-bold bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded border border-blue-500/30">{ngo.foodPreference}</span>
+                {registeredNGOs.map(ngo => {
+                  const isSelected = selectedNgos.some(n => n.id === ngo.id || n.name === ngo.name);
+                  return (
+                    <div 
+                      key={ngo.id} 
+                      onClick={() => toggleNgoSelection(ngo)}
+                      className={`p-4 rounded-2xl border transition-all duration-300 cursor-pointer ${isSelected ? 'border-[#1D52F2] bg-[#EBF1FE]/60 shadow-xs' : 'border-slate-200 hover:border-slate-300 bg-white'}`}
+                    >
+                      <div className="flex justify-between items-start gap-4">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-slate-900 font-extrabold text-sm">{ngo.name}</h3>
+                            {isSelected && (
+                              <span className="text-[10px] font-bold text-[#1D52F2] bg-white px-2 py-0.5 rounded-full border border-[#1D52F2]/30 flex items-center gap-1">
+                                <CheckCircle2 className="w-3 h-3 text-[#1D52F2]" /> Selected
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-slate-500 text-xs mt-1 flex items-start gap-1">
+                            <MapPin className="w-3.5 h-3.5 mt-0.5 text-[#1D52F2] shrink-0" />
+                            {ngo.address}
+                          </p>
+                          <div className="flex flex-wrap gap-2 mt-2.5">
+                            <span className="text-[10px] font-bold bg-[#EBF1FE] text-[#1D52F2] px-2.5 py-0.5 rounded-md border border-[#1D52F2]/20">Capacity: {ngo.capacity}</span>
+                            <span className="text-[10px] font-bold bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-md">{ngo.foodPreference}</span>
+                          </div>
+                        </div>
+
+                        <div className={`w-6 h-6 rounded-lg border flex items-center justify-center transition-all shrink-0 ${isSelected ? 'bg-[#1D52F2] border-[#1D52F2] text-white' : 'border-slate-300 bg-white'}`}>
+                          {isSelected && <Check className="w-4 h-4 text-white" />}
                         </div>
                       </div>
-                      <button 
-                        type="button"
-                        onClick={() => setSelectedNgo(selectedNgo?.id === ngo.id ? null : ngo)}
-                        className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-all flex-shrink-0 ${selectedNgo?.id === ngo.id ? 'bg-emerald-500 text-emerald-950 hover:bg-emerald-400 shadow-lg shadow-emerald-500/20' : 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 border border-blue-500/40'}`}
-                      >
-                        {selectedNgo?.id === ngo.id ? 'Selected' : 'Select'}
-                      </button>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
-              <div className="text-center py-6 glass-card rounded-xl border border-blue-500/10 bg-blue-950/10">
-                <AlertCircle className="w-6 h-6 text-blue-400/50 mx-auto mb-2" />
-                <p className="text-xs text-slate-400 max-w-[200px] mx-auto">No NGOs registered yet. Ask shelters to register via the NGOs tab.</p>
+              <div className="text-center py-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50">
+                <AlertCircle className="w-6 h-6 text-slate-400 mx-auto mb-2" />
+                <p className="text-xs text-slate-500 max-w-[220px] mx-auto">No NGOs registered yet.</p>
               </div>
             )}
           </div>
 
-          {/* b. Select Volunteer Courier */}
-          <div className="glass-panel p-5 rounded-3xl border border-amber-500/30 space-y-4">
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.8)]"></span> 
-              Select Volunteer Courier
-            </h2>
+          {/* b. Select Volunteer Couriers (Multi-select) */}
+          <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#F26B1D]"></span> 
+                  Select Volunteer Couriers ({selectedVolunteers.length} Selected)
+                </h2>
+                <p className="text-[11px] text-slate-500 mt-0.5">Alert standby couriers; anyone can accept if one cannot travel.</p>
+              </div>
+              <button 
+                type="button"
+                onClick={toggleSelectAllVolunteers}
+                className="text-[11px] font-bold text-[#F26B1D] hover:underline cursor-pointer"
+              >
+                {selectedVolunteers.length === registeredVolunteers.length ? 'Deselect All' : 'Select All'}
+              </button>
+            </div>
+
             {registeredVolunteers && registeredVolunteers.length > 0 ? (
               <div className="space-y-3">
-                {registeredVolunteers.map(vol => (
-                  <div key={vol.id} className={`glass-card p-4 rounded-xl border transition-all duration-300 ${selectedVolunteer?.id === vol.id ? 'border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.2)] bg-emerald-900/10' : 'border-amber-500/20 hover:border-amber-500/40'}`}>
-                    <div className="flex justify-between items-start gap-4">
-                      <div>
-                        <h3 className="text-white font-bold text-sm">{vol.name}</h3>
-                        <p className="text-slate-400 text-xs mt-1 flex items-center gap-1">
-                          <Phone className="w-3 h-3 text-amber-400" />
-                          {vol.phone}
-                        </p>
-                        <div className="flex flex-wrap gap-2 mt-3">
-                          <span className="text-[10px] font-bold bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded border border-amber-500/30 flex items-center gap-1">
-                            <Truck className="w-3 h-3" />
-                            {vol.vehicle}
-                          </span>
-                          <span className="text-[10px] font-bold bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded border border-amber-500/30 flex items-center gap-1">
-                            <MapPin className="w-3 h-3" />
-                            {vol.operatingZone}
-                          </span>
+                {registeredVolunteers.map(vol => {
+                  const isSelected = selectedVolunteers.some(v => v.id === vol.id || v.name === vol.name);
+                  return (
+                    <div 
+                      key={vol.id} 
+                      onClick={() => toggleVolunteerSelection(vol)}
+                      className={`p-4 rounded-2xl border transition-all duration-300 cursor-pointer ${isSelected ? 'border-[#F26B1D] bg-[#FEF3EB]/60 shadow-xs' : 'border-slate-200 hover:border-slate-300 bg-white'}`}
+                    >
+                      <div className="flex justify-between items-start gap-4">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-slate-900 font-extrabold text-sm">{vol.name}</h3>
+                            {isSelected && (
+                              <span className="text-[10px] font-bold text-[#F26B1D] bg-white px-2 py-0.5 rounded-full border border-[#F26B1D]/30 flex items-center gap-1">
+                                <CheckCircle2 className="w-3 h-3 text-[#F26B1D]" /> Selected
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-slate-500 text-xs mt-1 flex items-center gap-1">
+                            <Phone className="w-3.5 h-3.5 text-[#F26B1D]" />
+                            {vol.phone}
+                          </p>
+                          <div className="flex flex-wrap gap-2 mt-2.5">
+                            <span className="text-[10px] font-bold bg-[#FEF3EB] text-[#F26B1D] px-2.5 py-0.5 rounded-md border border-[#F26B1D]/20 flex items-center gap-1">
+                              <Truck className="w-3 h-3" />
+                              {vol.vehicle}
+                            </span>
+                            <span className="text-[10px] font-bold bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-md flex items-center gap-1">
+                              <MapPin className="w-3 h-3" />
+                              {vol.operatingZone}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className={`w-6 h-6 rounded-lg border flex items-center justify-center transition-all shrink-0 ${isSelected ? 'bg-[#F26B1D] border-[#F26B1D] text-white' : 'border-slate-300 bg-white'}`}>
+                          {isSelected && <Check className="w-4 h-4 text-white" />}
                         </div>
                       </div>
-                      <button 
-                        type="button"
-                        onClick={() => setSelectedVolunteer(selectedVolunteer?.id === vol.id ? null : vol)}
-                        className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-all flex-shrink-0 ${selectedVolunteer?.id === vol.id ? 'bg-emerald-500 text-emerald-950 hover:bg-emerald-400 shadow-lg shadow-emerald-500/20' : 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 border border-amber-500/40'}`}
-                      >
-                        {selectedVolunteer?.id === vol.id ? 'Selected' : 'Select'}
-                      </button>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
-              <div className="text-center py-6 glass-card rounded-xl border border-amber-500/10 bg-amber-950/10">
-                <AlertCircle className="w-6 h-6 text-amber-400/50 mx-auto mb-2" />
-                <p className="text-xs text-slate-400">No volunteers registered yet.</p>
+              <div className="text-center py-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50">
+                <AlertCircle className="w-6 h-6 text-slate-400 mx-auto mb-2" />
+                <p className="text-xs text-slate-500">No volunteers registered yet.</p>
               </div>
             )}
           </div>
 
           {/* c. Your Active Donations */}
-          {donations && donations.length > 0 && (
-            <div className="glass-panel p-5 rounded-3xl border border-emerald-500/30 space-y-4">
+          {donorDonations && donorDonations.length > 0 && (
+            <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-emerald-400" />
+                <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-[#1D52F2]" />
                   <span>Your Active Donations</span>
                 </h2>
-                <span className="text-xs text-slate-400 font-semibold bg-emerald-500/10 px-2 py-1 rounded-md border border-emerald-500/20">{donations.length} Listed</span>
+                <span className="text-xs text-[#1D52F2] font-bold bg-[#EBF1FE] px-2.5 py-0.5 rounded-full border border-[#1D52F2]/20">{donorDonations.length} Listed</span>
               </div>
 
               <div className="space-y-4">
-                {donations.map((item) => (
+                {donorDonations.map((item) => (
                   <div 
                     key={item.id}
-                    className="glass-card p-5 rounded-2xl space-y-4 border border-emerald-500/25 relative group"
+                    className="p-5 rounded-2xl space-y-4 border border-slate-200 bg-[#F8FAFC] relative group hover:border-slate-300 transition-all"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
                         <img 
                           src={item.imageUrl} 
                           alt={item.foodName}
-                          className="w-14 h-14 object-cover rounded-xl border border-emerald-500/30"
+                          className="w-14 h-14 object-cover rounded-xl border border-slate-200"
                           onError={(e) => {
                             e.target.onerror = null;
                             e.target.src = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=150&auto=format&fit=crop&q=80";
                           }}
                         />
                         <div>
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                            {item.id}
-                          </span>
-                          <h3 className="text-sm font-bold text-white mt-1 leading-tight">{item.foodName}</h3>
-                          <p className="text-[11px] text-slate-400 mt-0.5">{item.quantity} • Feeds ~{item.peopleFedCount} people</p>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#1D52F2] bg-[#EBF1FE] px-2 py-0.5 rounded border border-[#1D52F2]/20">
+                              {item.id}
+                            </span>
+                            <span className="text-[10px] font-bold text-[#63A644] bg-[#F0F8EC] px-2 py-0.5 rounded border border-[#63A644]/20 flex items-center gap-1">
+                              <HeartHandshake className="w-3 h-3 text-[#63A644]" />
+                              Donor: {item.donorName || currentUser?.name || "Registered Donor"}
+                            </span>
+                          </div>
+                          <h3 className="text-sm font-bold text-slate-900 mt-1 leading-tight">
+                            {item.foodName?.toLowerCase() === 'dhruv' ? 'Prepared Catered Meals' : item.foodName}
+                          </h3>
+                          <p className="text-[11px] text-slate-500 mt-0.5">{item.quantity} • Feeds ~{item.peopleFedCount} people</p>
                         </div>
                       </div>
 
                       {/* Status Badge */}
                       <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide border ${
-                        item.status === 'Distributed' || item.status === 'Delivered to NGO'
-                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' 
-                          : item.status === 'Volunteer Accepted' || item.status === 'Food Picked Up'
-                          ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                          : 'bg-blue-500/20 text-blue-300 border-blue-500/40'
+                        item.status === 'Distributed' || item.status === 'Delivered to NGO' || item.status === 'Delivered' || item.status === 'NGO Confirmed'
+                          ? 'bg-[#F0F8EC] text-[#63A644] border-[#63A644]/30' 
+                          : item.status === 'Volunteer Accepted' || item.status === 'Food Picked Up' || item.status === 'Travelling to NGO' || item.status === 'Food In Transit'
+                          ? 'bg-[#FEF3EB] text-[#F26B1D] border-[#F26B1D]/30'
+                          : 'bg-[#EBF1FE] text-[#1D52F2] border-[#1D52F2]/30'
                       }`}>
                         {item.status}
                       </span>
                     </div>
 
-                    {/* Assigned Volunteer Details Box */}
-                    <div className="bg-emerald-950/80 p-3 rounded-xl border border-emerald-500/20 text-xs text-slate-300 flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <img 
-                          src={item.assignedVolunteer?.photo || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"} 
-                          alt="Volunteer"
-                          className="w-8 h-8 rounded-full border border-amber-400"
-                        />
-                        <div>
-                          <p className="text-[10px] font-bold text-amber-400 uppercase">Assigned Volunteer Courier</p>
-                          <p className="font-extrabold text-white text-xs">{item.assignedVolunteer?.name || "Alex Rivera"}</p>
+                    {/* Multi-NGO and Multi-Volunteer Real-time Status */}
+                    <div className="bg-white p-3 rounded-xl border border-slate-200 text-xs text-slate-700 space-y-2 shadow-xs">
+                      <div>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">NGO Shelter Status</span>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {(item.selectedNgos && item.selectedNgos.length > 0 ? item.selectedNgos : [item.recommendedNgo]).filter(Boolean).map(n => {
+                            const isAccepted = item.acceptedNgo?.name === n.name || item.acceptedNgo?.id === n.id;
+                            const isDeclined = item.declinedNgos?.includes(n.name) || item.declinedNgos?.includes(n.id);
+                            return (
+                              <span key={n.id || n.name} className={`px-2 py-0.5 rounded text-[10px] font-bold border ${isAccepted ? 'bg-[#F0F8EC] text-[#63A644] border-[#63A644]/30' : isDeclined ? 'bg-red-50 text-red-600 border-red-200 line-through' : 'bg-slate-100 text-slate-700 border-slate-200'}`}>
+                                {n.name} {isAccepted ? '✓ (Accepted)' : isDeclined ? '✕ (Full)' : '(Pending)'}
+                              </span>
+                            );
+                          })}
                         </div>
                       </div>
 
-                      <span className="text-[10px] font-mono text-slate-400">
-                        {item.assignedVolunteer?.phone || "+1 555-456-7890"}
-                      </span>
+                      <div>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Volunteer Courier Status</span>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {(item.selectedVolunteers && item.selectedVolunteers.length > 0 ? item.selectedVolunteers : [item.assignedVolunteer]).filter(Boolean).map(v => {
+                            const isAccepted = item.acceptedVolunteer?.name === v.name || item.acceptedVolunteer?.id === v.id;
+                            const isDeclined = item.declinedVolunteers?.includes(v.name) || item.declinedVolunteers?.includes(v.id);
+                            return (
+                              <span key={v.id || v.name} className={`px-2 py-0.5 rounded text-[10px] font-bold border ${isAccepted ? 'bg-[#FEF3EB] text-[#F26B1D] border-[#F26B1D]/30' : isDeclined ? 'bg-red-50 text-red-600 border-red-200 line-through' : 'bg-slate-100 text-slate-700 border-slate-200'}`}>
+                                {v.name} {isAccepted ? '✓ (Accepted)' : isDeclined ? '✕ (Unavailable)' : '(Pending)'}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </div>
                     </div>
 
                     {/* Action Buttons */}
                     <div className="space-y-2">
-                      
-                      {/* DIRECT BUTTON TO SEND VOLUNTEER DONATION RECEIVING SMS */}
                       <button
                         onClick={() => setActiveSMSDonation(item)}
-                        className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-amber-950 font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-2"
+                        className="w-full py-2.5 rounded-xl bg-[#FEF3EB] hover:bg-[#F26B1D]/15 border border-[#F26B1D]/30 text-[#F26B1D] font-extrabold text-xs shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
                       >
-                        <Smartphone className="w-4 h-4 text-amber-950" />
+                        <Smartphone className="w-4 h-4 text-[#F26B1D]" />
                         <span>Send Donation Receiving SMS to Volunteer</span>
                       </button>
 
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => setActiveQRDonation(item)}
-                          className="py-2 px-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 text-xs font-bold transition-all flex items-center gap-1"
+                          className="py-2 px-3 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-800 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+                          title="Display Pickup QR Code for arriving volunteer courier to scan"
                         >
-                          <QrCode className="w-3.5 h-3.5 text-emerald-400" />
-                          <span>View QR</span>
+                          <QrCode className="w-3.5 h-3.5 text-[#1D52F2]" />
+                          <span>Pickup QR Pass</span>
                         </button>
 
                         <button
@@ -591,7 +757,7 @@ export const DonorDashboard = () => {
                             setSelectedDonation(item);
                             setActiveView('live-tracking');
                           }}
-                          className="flex-1 py-2 rounded-xl bg-emerald-900/40 hover:bg-emerald-800/60 border border-emerald-500/30 text-emerald-300 text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                          className="flex-1 py-2 rounded-xl bg-[#1D52F2] hover:bg-[#133BB5] text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
                         >
                           <Eye className="w-3.5 h-3.5" />
                           <span>Live GPS Map</span>
@@ -602,7 +768,7 @@ export const DonorDashboard = () => {
                             setSelectedDonation(item);
                             setActiveView('ai-matching');
                           }}
-                          className="py-2 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-emerald-950 text-xs font-extrabold transition-all"
+                          className="py-2 px-3 rounded-xl bg-[#F0F8EC] hover:bg-[#63A644]/20 text-[#63A644] border border-[#63A644]/30 text-xs font-extrabold transition-all cursor-pointer"
                           title="AI Smart Match Dashboard"
                         >
                           <Sparkles className="w-3.5 h-3.5" />
@@ -621,11 +787,12 @@ export const DonorDashboard = () => {
 
       </div>
 
-      {/* QR MODAL */}
+      {/* DONOR PICKUP QR MODAL */}
       <QRModal 
         isOpen={!!activeQRDonation}
         onClose={() => setActiveQRDonation(null)}
         donation={activeQRDonation}
+        type="pickup"
       />
 
       {/* SEND VOLUNTEER RECEIVING SMS MODAL */}

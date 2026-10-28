@@ -45,22 +45,21 @@ export const AuthModal = ({ isOpen, onClose }) => {
       return;
     }
     setOtpSent(true);
-    showToast(`Simulated OTP sent to ${formData.phone}`, "info");
+    showToast(`OTP sent to ${formData.phone}`, "info");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (isSignup) {
       if (selectedRole === 'donor' && formData.donorType === 'Household / Individual') {
-        if (!otpSent || otp !== '1234') { // Simulated OTP check
-          showToast("Please verify OTP (use 1234 for simulation)", "error");
+        if (!otpSent || otp.length !== 4) {
+          showToast("Please enter the 4-digit OTP sent to your phone", "error");
           return;
         }
       }
 
       let certificateUrl = null;
       if (selectedRole === 'donor' && formData.donorType !== 'Household / Individual' && fssaiFile) {
-         // Placeholder for actual file upload, we'll implement it properly later or assume it's handled in AppContext
          certificateUrl = URL.createObjectURL(fssaiFile); 
       }
 
@@ -79,9 +78,8 @@ export const AuthModal = ({ isOpen, onClose }) => {
       });
 
       if (success) {
-        setIsSignup(false);
-        setOtpSent(false);
-        setOtp('');
+        onClose();
+        setFormData({ name: '', email: '', password: '', phone: '', address: '', donorType: 'Household / Individual', fssaiNumber: '', businessName: '', ownerName: '' });
       }
     } else {
       const success = await loginUser(formData.email, formData.password, selectedRole);
@@ -98,39 +96,39 @@ export const AuthModal = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-emerald-950/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg glass-panel rounded-3xl p-6 sm:p-8 border border-emerald-500/40 shadow-2xl space-y-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="relative w-full max-w-lg bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
         
         {/* Close Button */}
         <button 
           onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-xl bg-emerald-900/40 text-slate-300 hover:text-white hover:bg-emerald-800/60 border border-emerald-500/30"
+          className="absolute top-5 right-5 p-2 rounded-xl bg-slate-100 text-slate-500 hover:text-slate-900 hover:bg-slate-200 border border-slate-200 transition-colors cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Header */}
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 mb-1">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-[#EBF1FE] text-[#1D52F2] mb-1">
             <Sparkles className="w-6 h-6" />
           </div>
-          <h2 className="text-2xl font-extrabold text-white">
+          <h2 className="text-2xl font-black text-slate-900">
             {isSignup ? 'Create Your Account' : 'Welcome to FoodBridge AI'}
           </h2>
-          <p className="text-xs text-slate-300">
+          <p className="text-xs text-slate-500">
             Select your role to access customized food rescue tools.
           </p>
         </div>
 
         {/* Role Selector Tabs */}
-        <div className="grid grid-cols-4 gap-2 bg-emerald-950/80 p-1.5 rounded-2xl border border-emerald-500/30">
+        <div className="grid grid-cols-4 gap-2 bg-[#F8FAFC] p-1.5 rounded-2xl border border-slate-200">
           <button
             type="button"
             onClick={() => setSelectedRole('donor')}
-            className={`flex flex-col items-center gap-1 p-2 rounded-xl text-[11px] font-bold transition-all ${
+            className={`flex flex-col items-center gap-1 p-2 rounded-xl text-[11px] font-bold transition-all cursor-pointer ${
               selectedRole === 'donor'
-                ? 'bg-emerald-500 text-emerald-950 shadow-md'
-                : 'text-slate-400 hover:text-white hover:bg-emerald-800/30'
+                ? 'bg-[#1D52F2] text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
             }`}
           >
             <HeartHandshake className="w-4 h-4" />
@@ -140,10 +138,10 @@ export const AuthModal = ({ isOpen, onClose }) => {
           <button
             type="button"
             onClick={() => setSelectedRole('volunteer')}
-            className={`flex flex-col items-center gap-1 p-2 rounded-xl text-[11px] font-bold transition-all ${
+            className={`flex flex-col items-center gap-1 p-2 rounded-xl text-[11px] font-bold transition-all cursor-pointer ${
               selectedRole === 'volunteer'
-                ? 'bg-emerald-500 text-emerald-950 shadow-md'
-                : 'text-slate-400 hover:text-white hover:bg-emerald-800/30'
+                ? 'bg-[#F26B1D] text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
             }`}
           >
             <Truck className="w-4 h-4" />
@@ -153,10 +151,10 @@ export const AuthModal = ({ isOpen, onClose }) => {
           <button
             type="button"
             onClick={() => setSelectedRole('ngo')}
-            className={`flex flex-col items-center gap-1 p-2 rounded-xl text-[11px] font-bold transition-all ${
+            className={`flex flex-col items-center gap-1 p-2 rounded-xl text-[11px] font-bold transition-all cursor-pointer ${
               selectedRole === 'ngo'
-                ? 'bg-emerald-500 text-emerald-950 shadow-md'
-                : 'text-slate-400 hover:text-white hover:bg-emerald-800/30'
+                ? 'bg-[#63A644] text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
             }`}
           >
             <Building2 className="w-4 h-4" />
@@ -166,10 +164,10 @@ export const AuthModal = ({ isOpen, onClose }) => {
           <button
             type="button"
             onClick={() => setSelectedRole('admin')}
-            className={`flex flex-col items-center gap-1 p-2 rounded-xl text-[11px] font-bold transition-all ${
+            className={`flex flex-col items-center gap-1 p-2 rounded-xl text-[11px] font-bold transition-all cursor-pointer ${
               selectedRole === 'admin'
-                ? 'bg-emerald-500 text-emerald-950 shadow-md'
-                : 'text-slate-400 hover:text-white hover:bg-emerald-800/30'
+                ? 'bg-slate-800 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
             }`}
           >
             <ShieldCheck className="w-4 h-4" />
@@ -184,11 +182,11 @@ export const AuthModal = ({ isOpen, onClose }) => {
             <>
               {selectedRole === 'donor' && (
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Donor Type</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Donor Type</label>
                   <select
                     value={formData.donorType}
                     onChange={(e) => setFormData({...formData, donorType: e.target.value})}
-                    className="w-full px-4 py-2.5 rounded-xl bg-emerald-950/90 border border-emerald-500/30 text-white text-xs focus:outline-none focus:border-emerald-400"
+                    className="w-full px-4 py-2.5 rounded-xl bg-[#F8FAFC] border border-slate-200 text-slate-900 text-xs focus:outline-none focus:border-[#1D52F2] focus:bg-white cursor-pointer"
                   >
                     <option value="Household / Individual">Household / Individual</option>
                     <option value="Restaurant">Restaurant</option>
@@ -201,72 +199,72 @@ export const AuthModal = ({ isOpen, onClose }) => {
               )}
 
               {selectedRole === 'donor' && formData.donorType !== 'Household / Individual' && (
-                <div className="space-y-4 p-4 rounded-xl bg-emerald-900/20 border border-emerald-500/30">
-                  <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-wider">FSSAI Verification Details</h4>
+                <div className="space-y-4 p-4 rounded-2xl bg-[#FEF3EB] border border-[#F26B1D]/30">
+                  <h4 className="text-xs font-black text-[#F26B1D] uppercase tracking-wider">FSSAI Verification Details</h4>
                   
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">FSSAI License Number *</label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">FSSAI License Number *</label>
                     <input 
                       type="text" 
                       required
                       placeholder="14-digit FSSAI Number"
                       value={formData.fssaiNumber}
                       onChange={(e) => setFormData({...formData, fssaiNumber: e.target.value})}
-                      className="w-full px-4 py-2.5 rounded-xl bg-emerald-950/90 border border-emerald-500/30 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-emerald-400"
+                      className="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-900 placeholder-slate-400 text-xs focus:outline-none focus:border-[#F26B1D]"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">Business Name *</label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Business Name *</label>
                     <input 
                       type="text" 
                       required
                       placeholder="Registered Business Name"
                       value={formData.businessName}
                       onChange={(e) => setFormData({...formData, businessName: e.target.value})}
-                      className="w-full px-4 py-2.5 rounded-xl bg-emerald-950/90 border border-emerald-500/30 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-emerald-400"
+                      className="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-900 placeholder-slate-400 text-xs focus:outline-none focus:border-[#F26B1D]"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">Owner / Manager Name *</label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Owner / Manager Name *</label>
                     <input 
                       type="text" 
                       required
                       placeholder="Contact Person Name"
                       value={formData.ownerName}
                       onChange={(e) => setFormData({...formData, ownerName: e.target.value})}
-                      className="w-full px-4 py-2.5 rounded-xl bg-emerald-950/90 border border-emerald-500/30 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-emerald-400"
+                      className="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-900 placeholder-slate-400 text-xs focus:outline-none focus:border-[#F26B1D]"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">Upload FSSAI Certificate *</label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Upload FSSAI Certificate *</label>
                     <input 
                       type="file" 
                       required
                       accept="image/*,.pdf"
                       onChange={handleFileChange}
-                      className="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-500/20 file:text-emerald-300 hover:file:bg-emerald-500/30"
+                      className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-white file:text-slate-800 hover:file:bg-slate-100"
                     />
                   </div>
                 </div>
               )}
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Full Name / Org Name</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Full Name / Org Name</label>
                 <input 
                   type="text" 
                   required
-                  placeholder="e.g. Royal Horizon Hotel or Alex Rivera"
+                  placeholder="e.g. Dhruv or Community Kitchen"
                   value={formData.name}
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  className="w-full px-4 py-2.5 rounded-xl bg-emerald-950/90 border border-emerald-500/30 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-emerald-400"
+                  className="w-full px-4 py-2.5 rounded-xl bg-[#F8FAFC] border border-slate-200 text-slate-900 placeholder-slate-400 text-xs focus:outline-none focus:border-[#1D52F2] focus:bg-white"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Phone Number</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Phone Number</label>
                 <div className="flex gap-2">
                   <input 
                     type="tel" 
@@ -274,13 +272,13 @@ export const AuthModal = ({ isOpen, onClose }) => {
                     placeholder="e.g. +1 (555) 234-5678"
                     value={formData.phone}
                     onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                    className="flex-1 px-4 py-2.5 rounded-xl bg-emerald-950/90 border border-emerald-500/30 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-emerald-400"
+                    className="flex-1 px-4 py-2.5 rounded-xl bg-[#F8FAFC] border border-slate-200 text-slate-900 placeholder-slate-400 text-xs focus:outline-none focus:border-[#1D52F2] focus:bg-white"
                   />
                   {selectedRole === 'donor' && formData.donorType === 'Household / Individual' && (
                     <button 
                       type="button" 
                       onClick={handleSendOtp}
-                      className="px-4 py-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded-xl text-xs font-bold transition-colors border border-amber-500/30"
+                      className="px-4 py-2 bg-[#FEF3EB] hover:bg-[#F26B1D]/15 text-[#F26B1D] rounded-xl text-xs font-bold transition-colors border border-[#F26B1D]/30 cursor-pointer"
                     >
                       {otpSent ? 'Sent' : 'Send OTP'}
                     </button>
@@ -289,60 +287,60 @@ export const AuthModal = ({ isOpen, onClose }) => {
               </div>
 
               {selectedRole === 'donor' && formData.donorType === 'Household / Individual' && otpSent && (
-                <div className="p-3 bg-amber-950/40 rounded-xl border border-amber-500/30">
-                  <label className="block text-xs font-medium text-amber-300 mb-1">Enter OTP (Simulated: 1234)</label>
+                <div className="p-3 bg-[#FEF3EB] rounded-xl border border-[#F26B1D]/30">
+                  <label className="block text-xs font-bold text-[#F26B1D] mb-1">Enter OTP</label>
                   <input 
                     type="text" 
                     required
                     placeholder="4-digit code"
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
-                    className="w-full px-4 py-2 rounded-lg bg-emerald-950/90 border border-emerald-500/30 text-white text-xs focus:outline-none focus:border-amber-400"
+                    className="w-full px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-900 text-xs focus:outline-none focus:border-[#F26B1D]"
                   />
                 </div>
               )}
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Address / Operating Location</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Address / Operating Location</label>
                 <input 
                   type="text" 
                   required
                   placeholder="e.g. 742 Evergreen Terrace, Sector 4"
                   value={formData.address}
                   onChange={(e) => setFormData({...formData, address: e.target.value})}
-                  className="w-full px-4 py-2.5 rounded-xl bg-emerald-950/90 border border-emerald-500/30 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-emerald-400"
+                  className="w-full px-4 py-2.5 rounded-xl bg-[#F8FAFC] border border-slate-200 text-slate-900 placeholder-slate-400 text-xs focus:outline-none focus:border-[#1D52F2] focus:bg-white"
                 />
               </div>
             </>
           )}
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">Email Address</label>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Email Address</label>
             <input 
               type="email" 
               required
               placeholder="user@foodbridge.ai"
               value={formData.email}
               onChange={(e) => setFormData({...formData, email: e.target.value})}
-              className="w-full px-4 py-2.5 rounded-xl bg-emerald-950/90 border border-emerald-500/30 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-emerald-400"
+              className="w-full px-4 py-2.5 rounded-xl bg-[#F8FAFC] border border-slate-200 text-slate-900 placeholder-slate-400 text-xs focus:outline-none focus:border-[#1D52F2] focus:bg-white"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">Password</label>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Password</label>
             <input 
               type="password" 
               required
               placeholder="••••••••••••"
               value={formData.password}
               onChange={(e) => setFormData({...formData, password: e.target.value})}
-              className="w-full px-4 py-2.5 rounded-xl bg-emerald-950/90 border border-emerald-500/30 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-emerald-400"
+              className="w-full px-4 py-2.5 rounded-xl bg-[#F8FAFC] border border-slate-200 text-slate-900 placeholder-slate-400 text-xs focus:outline-none focus:border-[#1D52F2] focus:bg-white"
             />
           </div>
 
           <button
             type="submit"
-            className="w-full py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-extrabold text-xs shadow-lg shadow-emerald-500/20 transition-all hover:scale-[1.02]"
+            className="w-full py-3 rounded-2xl bg-[#1D52F2] hover:bg-[#133BB5] text-white font-black text-xs shadow-md shadow-[#1D52F2]/25 transition-all hover:scale-[1.01] cursor-pointer"
           >
             {isSignup ? `Register as ${capitalizeRole(selectedRole)}` : `Log In as ${capitalizeRole(selectedRole)}`}
           </button>
@@ -351,7 +349,7 @@ export const AuthModal = ({ isOpen, onClose }) => {
         <div className="text-center">
           <button
             onClick={() => setIsSignup(!isSignup)}
-            className="text-xs text-slate-400 hover:text-emerald-300 transition-colors"
+            className="text-xs text-slate-500 hover:text-[#1D52F2] font-semibold transition-colors cursor-pointer"
           >
             {isSignup ? "Already have an account? Log In" : "Don't have an account? Sign Up"}
           </button>

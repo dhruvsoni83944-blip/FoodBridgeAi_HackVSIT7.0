@@ -3,7 +3,7 @@ import {
   BarChart3, 
   Utensils, 
   Leaf, 
-  Globe, 
+  Users, 
   Droplets, 
   Sparkles, 
   Sliders, 
@@ -32,23 +32,23 @@ export const AIImpactPredictor = () => {
   const waterSavedLiters = Math.floor(weightKg * currentMult.waterPerKg);
 
   return (
-    <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-emerald-500/30 space-y-8 shadow-2xl">
+    <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 space-y-8 shadow-sm">
       
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-emerald-500/20 pb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-200 pb-6">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold border border-emerald-500/30">
-            <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EBF1FE] text-[#1D52F2] text-xs font-bold border border-[#1D52F2]/30">
+            <Sparkles className="w-3.5 h-3.5 text-[#1D52F2]" />
             <span>Environmental Impact Predictor Model</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-white mt-1">AI Impact Prediction Engine</h2>
-          <p className="text-xs text-slate-300">
+          <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mt-1">AI Impact Prediction Engine</h2>
+          <p className="text-xs text-slate-500">
             Simulate the social and ecological savings of rescuing any quantity of surplus food.
           </p>
         </div>
 
-        <span className="px-3.5 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-extrabold flex items-center gap-1.5">
-          <Award className="w-4 h-4 text-emerald-400" />
+        <span className="px-3.5 py-1.5 rounded-full bg-[#F0F8EC] border border-[#63A644]/30 text-[#63A644] text-xs font-extrabold flex items-center gap-1.5">
+          <Award className="w-4 h-4 text-[#63A644]" />
           <span>UN SDG 12.3 & 2.1 Compliant</span>
         </span>
       </div>
@@ -56,18 +56,18 @@ export const AIImpactPredictor = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
         
         {/* Left Column: Interactive Sliders & Category Selector (5 Cols) */}
-        <div className="lg:col-span-5 glass-card p-6 rounded-3xl border border-emerald-500/30 space-y-6">
+        <div className="lg:col-span-5 bg-[#F8FAFC] p-6 rounded-3xl border border-slate-200 space-y-6">
           
-          <h3 className="text-sm font-bold text-white flex items-center gap-2">
-            <Sliders className="w-4 h-4 text-emerald-400" />
+          <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+            <Sliders className="w-4 h-4 text-[#1D52F2]" />
             <span>Simulation Parameters</span>
           </h3>
 
           {/* Quantity Slider */}
           <div className="space-y-3">
             <div className="flex justify-between items-center text-xs">
-              <label className="font-semibold text-slate-300">Surplus Food Weight (kg)</label>
-              <span className="font-extrabold text-emerald-400 bg-emerald-500/20 px-3 py-1 rounded-lg text-sm border border-emerald-500/30">
+              <label className="font-bold text-slate-700">Surplus Food Weight (kg)</label>
+              <span className="font-black text-[#1D52F2] bg-[#EBF1FE] px-3 py-1 rounded-xl text-sm border border-[#1D52F2]/20">
                 {weightKg} kg
               </span>
             </div>
@@ -79,7 +79,7 @@ export const AIImpactPredictor = () => {
               step="5"
               value={weightKg}
               onChange={(e) => setWeightKg(Number(e.target.value))}
-              className="w-full h-2 bg-emerald-950 rounded-lg appearance-none cursor-pointer accent-emerald-400"
+              className="w-full h-2.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#1D52F2]"
             />
             
             <div className="flex justify-between text-[10px] text-slate-500 font-semibold">
@@ -91,17 +91,17 @@ export const AIImpactPredictor = () => {
 
           {/* Food Category Selector */}
           <div className="space-y-2">
-            <label className="block text-xs font-semibold text-slate-300">Food Category Type</label>
+            <label className="block text-xs font-bold text-slate-700">Food Category Type</label>
             <div className="grid grid-cols-2 gap-2">
               {Object.keys(multipliers).map((cat) => (
                 <button
                   key={cat}
                   type="button"
                   onClick={() => setFoodCategory(cat)}
-                  className={`p-2.5 rounded-xl text-xs font-bold transition-all text-left border ${
+                  className={`p-2.5 rounded-xl text-xs font-bold transition-all text-left border cursor-pointer ${
                     foodCategory === cat 
-                      ? 'bg-emerald-500 text-emerald-950 border-emerald-400 shadow-md shadow-emerald-500/20' 
-                      : 'bg-emerald-950/80 text-slate-300 border-emerald-500/20 hover:border-emerald-400/40'
+                      ? 'bg-[#1D52F2] text-white border-[#1D52F2] shadow-xs' 
+                      : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
                   }`}
                 >
                   {cat}
@@ -111,76 +111,76 @@ export const AIImpactPredictor = () => {
           </div>
 
           {/* Info pill */}
-          <div className="p-3 rounded-2xl bg-emerald-950/60 border border-emerald-500/20 text-[11px] text-slate-400 leading-relaxed flex items-start gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-            <span>AI model updates CO2e and Water saving multipliers based on lifecycle analysis of selected ingredients.</span>
+          <div className="p-3 rounded-2xl bg-white border border-slate-200 text-[11px] text-slate-500 leading-relaxed flex items-start gap-2 shadow-xs">
+            <CheckCircle2 className="w-4 h-4 text-[#63A644] shrink-0 mt-0.5" />
+            <span>AI model dynamically calculates nutritional yield, meals produced, and water resource savings.</span>
           </div>
 
         </div>
 
-        {/* Right Column: 4 Glowing Result Cards (7 Cols) */}
+        {/* Right Column: 4 Result Cards (7 Cols) */}
         <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
           
           {/* Card 1: Estimated Meals Served */}
-          <div className="glass-card p-6 rounded-3xl border border-emerald-500/30 space-y-3 relative overflow-hidden group hover:scale-[1.02] transition-all shadow-xl">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
+          <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-3 relative overflow-hidden group hover:shadow-md transition-all">
+            <div className="w-12 h-12 rounded-2xl bg-[#EBF1FE] flex items-center justify-center text-[#1D52F2] group-hover:scale-110 transition-transform">
               <Utensils className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Estimated Meals Served</p>
-              <div className="text-3xl sm:text-4xl font-extrabold text-white font-heading mt-1">
-                {mealsServed.toLocaleString()} <span className="text-base text-emerald-400 font-bold">Meals</span>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Estimated Meals Served</p>
+              <div className="text-3xl sm:text-4xl font-black text-slate-900 font-heading mt-1">
+                {mealsServed.toLocaleString()} <span className="text-base text-[#1D52F2] font-bold">Meals</span>
               </div>
             </div>
-            <p className="text-[11px] text-emerald-300 font-semibold flex items-center gap-1">
+            <p className="text-[11px] text-[#63A644] font-bold flex items-center gap-1">
               <TrendingUp className="w-3.5 h-3.5" /> Direct hunger mitigation
             </p>
           </div>
 
           {/* Card 2: Food Waste Reduced */}
-          <div className="glass-card p-6 rounded-3xl border border-emerald-500/30 space-y-3 relative overflow-hidden group hover:scale-[1.02] transition-all shadow-xl">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
+          <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-3 relative overflow-hidden group hover:shadow-md transition-all">
+            <div className="w-12 h-12 rounded-2xl bg-[#F0F8EC] flex items-center justify-center text-[#63A644] group-hover:scale-110 transition-transform">
               <Leaf className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Food Waste Reduced</p>
-              <div className="text-3xl sm:text-4xl font-extrabold text-white font-heading mt-1">
-                {weightKg} <span className="text-base text-slate-400 font-bold">kg ({wasteReducedTons} Tons)</span>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Food Waste Reduced</p>
+              <div className="text-3xl sm:text-4xl font-black text-slate-900 font-heading mt-1">
+                {weightKg} <span className="text-base text-slate-500 font-bold">kg ({wasteReducedTons} Tons)</span>
               </div>
             </div>
-            <p className="text-[11px] text-emerald-300 font-semibold flex items-center gap-1">
+            <p className="text-[11px] text-[#63A644] font-bold flex items-center gap-1">
               <CheckCircle2 className="w-3.5 h-3.5" /> 100% diverted from landfill
             </p>
           </div>
 
-          {/* Card 3: Carbon Emissions Saved */}
-          <div className="glass-card p-6 rounded-3xl border border-emerald-500/30 space-y-3 relative overflow-hidden group hover:scale-[1.02] transition-all shadow-xl">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
-              <Globe className="w-6 h-6" />
+          {/* Card 3: Estimated People Fed */}
+          <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-3 relative overflow-hidden group hover:shadow-md transition-all">
+            <div className="w-12 h-12 rounded-2xl bg-[#FEF3EB] flex items-center justify-center text-[#F26B1D] group-hover:scale-110 transition-transform">
+              <Users className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Carbon Emissions Saved</p>
-              <div className="text-3xl sm:text-4xl font-extrabold text-emerald-400 font-heading mt-1">
-                {carbonSavedKg} <span className="text-base text-slate-400 font-bold">kg CO2e</span>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Estimated People Fed</p>
+              <div className="text-3xl sm:text-4xl font-black text-slate-900 font-heading mt-1">
+                {mealsServed.toLocaleString()} <span className="text-base text-[#F26B1D] font-bold">People</span>
               </div>
             </div>
-            <p className="text-[11px] text-emerald-300 font-semibold flex items-center gap-1">
-              <TrendingUp className="w-3.5 h-3.5" /> Prevents greenhouse gases
+            <p className="text-[11px] text-[#F26B1D] font-bold flex items-center gap-1">
+              <TrendingUp className="w-3.5 h-3.5" /> Direct hunger mitigation
             </p>
           </div>
 
           {/* Card 4: Water Saved */}
-          <div className="glass-card p-6 rounded-3xl border border-emerald-500/30 space-y-3 relative overflow-hidden group hover:scale-[1.02] transition-all shadow-xl">
-            <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
+          <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-3 relative overflow-hidden group hover:shadow-md transition-all">
+            <div className="w-12 h-12 rounded-2xl bg-[#EBF1FE] flex items-center justify-center text-[#1D52F2] group-hover:scale-110 transition-transform">
               <Droplets className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Virtual Water Saved</p>
-              <div className="text-3xl sm:text-4xl font-extrabold text-blue-300 font-heading mt-1">
-                {waterSavedLiters.toLocaleString()} <span className="text-base text-slate-400 font-bold">Liters</span>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Virtual Water Saved</p>
+              <div className="text-3xl sm:text-4xl font-black text-slate-900 font-heading mt-1">
+                {waterSavedLiters.toLocaleString()} <span className="text-base text-[#1D52F2] font-bold">Liters</span>
               </div>
             </div>
-            <p className="text-[11px] text-blue-400 font-semibold flex items-center gap-1">
+            <p className="text-[11px] text-[#1D52F2] font-bold flex items-center gap-1">
               <CheckCircle2 className="w-3.5 h-3.5" /> Agricultural footprint saved
             </p>
           </div>

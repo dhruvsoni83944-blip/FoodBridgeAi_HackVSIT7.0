@@ -7,16 +7,45 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies & Build artifacts
 node_modules
 dist
 dist-ssr
 *.local
 
-# Editor directories and files
+# Environment variables & Secrets (CRITICAL)
+.env
+.env.*
+*.env
+!.env.example
+!backend/.env.example
+!ai-service/.env.example
+
+# Local uploads & dynamic file storage
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Embedded Database local data & binaries
+backend/.embedded-postgres*
+backend/data/
+data/
+embedded-postgres-binaries/
+
+# Python Cache & Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+
+# Editor & OS files
 .vscode/*
 !.vscode/extensions.json
 .idea
 .DS_Store
+Thumbs.db
 *.suo
 *.ntvs*
 *.njsproj
